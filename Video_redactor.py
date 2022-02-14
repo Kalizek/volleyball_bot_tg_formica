@@ -20,7 +20,7 @@ def conversion(name):
 def video_cut(way,start,stop,name):
     with VideoFileClip(way) as clip:
                 cut1 = clip.subclip(start, stop)
-                cut1.write_videofile("Render_video/moment/" + name+ ".mp4")
+                cut1.write_videofile("Render_video/moment/" + name)
 
 def gluing():
     temp = []

@@ -10,15 +10,17 @@ def write_csv_Offer(name):
 
 def write_csv(name):
     mas = name.split(",")
+    temp = []
     print(mas)
     print(len(mas))
-    if (len(mas) % 2 == 0 and len(mas) >= 2):
-        return(False)
     try:
-        for i in range(1, len(mas)-1, 2):
-            print(mas[i],mas[i+1])
-            if (0 <= int(mas[i]) < int(mas[i+1])) == False:
-                return(False)
+        if (len(mas) % 2 == 0 and len(mas) >= 2):
+            return(False)
+        for i in range(1,len(mas)):
+            if ":" in mas[i]:
+                temp = mas[i].split(":")
+                mas[i] = int(temp[0]) * 60 + int(temp[1])
+                print(mas[i])
         with open("DB.csv", 'a', newline = '', encoding='utf-8') as csvfile:
                     writer = csv.writer(csvfile, delimiter=";")
                     for i in range(1,len(mas)-1, 2):
@@ -57,5 +59,5 @@ def render():
     print(read_mas)
     for i in range(len(read_mas)):
         if read_mas[i][0] != 0:
-            video_cut("video/" + read_mas[i][0], read_mas[i][1], read_mas[i][2], str(i) + ".mp4")
+            video_cut(r"C:\Users\Kalizek\YandexDisk\Video_volleyball\\" + read_mas[i][0], read_mas[i][1], read_mas[i][2], str(i) + ".mp4")
     os.remove("DB.csv")

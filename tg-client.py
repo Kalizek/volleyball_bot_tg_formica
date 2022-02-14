@@ -90,7 +90,7 @@ async def without_puree(message: types.Message):
 @dp.message_handler(lambda message: message.text == "Отправить список")
 async def cmd_start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    temp = os.listdir("video")
+    temp = os.listdir(r"C:\Users\Kalizek\YandexDisk\Video_volleyball")
     print(temp)
     temp.append("/cancel")
     buttons = temp
