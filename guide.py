@@ -10,8 +10,6 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
 from numpy import meshgrid
-from engine import write_csv, write_csv_Offer, render
-from Video_redactor import gluing, conversion
 from data import Token
 bot = Bot(Token)
 storage = MemoryStorage()
