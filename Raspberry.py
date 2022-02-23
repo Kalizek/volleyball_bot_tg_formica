@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os, csv
 import aiogram.utils.markdown as md
 from aiogram import Bot, Dispatcher, types
@@ -7,21 +8,19 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 from aiogram.utils import executor
-from PC import gluing, conversion, render
-from data import Token
 
 # Этот файл программы должен храниться на Rasberry. Он овечает за постоянное
 # общение с клиентами телеграмм бота и за получение списков от них.
 # После получения списков эта программа отправляет CSV файлы на пк (в PC.py)
 
-bot = Bot(Token)
+bot = Bot("5119368416:AAFyMffcZMb8WztB-RVldWmmNAK47y5qjFg")
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage) #создание бота (задаем токен, определяем хранилище)
 
 def write_csv_Offer(name): # Запись замечаний и предложений в файл Offer.csv
     temp = []
     temp.append(name)
-    with open("Offer.csv", 'a', newline = '', encoding='utf-8') as csvfile:
+    with open("/home/myprogramm/Offer.csv", 'a', newline = '', encoding='utf-8') as csvfile:
                     writer = csv.writer(csvfile, delimiter=";")
                     writer.writerow([temp[0]])
 
@@ -38,7 +37,7 @@ def write_csv(name): # Проверка на правильность ввода
                 temp = mas[i].split(":")
                 mas[i] = int(temp[0]) * 60 + int(temp[1])
                 print(mas[i])
-        with open("DB.csv", 'a', newline = '', encoding='utf-8') as csvfile:
+        with open("/home/myprogramm/DB.csv", 'a', newline = '', encoding='utf-8') as csvfile:
                     writer = csv.writer(csvfile, delimiter=";")
                     for i in range(1,len(mas)-1, 2):
                         print(i)
@@ -53,6 +52,9 @@ class Form(StatesGroup): # Создание класа для получения
 
 class Offers(StatesGroup):
     Offer = State() # Получение ответа с пожеланием или предложением
+
+class Video_ID(StatesGroup):
+    id = State() # Получение ответа с пожеланием или предложением
 
 def read_txt(text): # Чтение txt файлов, где записанны сообщения
     file_open = open("messages/" + text,"r",encoding="utf-8")
@@ -82,18 +84,11 @@ async def cmd_start(message: types.Message):                # мы выводи�
 @dp.message_handler(lambda message: message.text == "Админка") # Аналогично строке 75
 async def cmd_start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["Рендер)","Рендер всего", "Конвертация видео"]
+    buttons = ["Загрузка видео"]
     keyboard.add(*buttons)
     await message.answer("Привет, что хочешь сделать?", reply_markup=keyboard)
 
 # Доработка после изучения библиотеки Socket
-@dp.message_handler(lambda message: message.text == "Конвертация видео") # Аналогично строке 75
-async def without_puree(message: types.Message):
-    conversion("start_video")
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["меню"]
-    keyboard.add(*buttons)
-    await message.answer("Сконвертированно", reply_markup=keyboard)
 
 @dp.message_handler(lambda message: message.text == "Посмотреть список видео") # Аналогично строке 75
 async def without_puree(message: types.Message):
@@ -102,32 +97,14 @@ async def without_puree(message: types.Message):
     keyboard.add(*buttons)
     await message.answer("Все видео на https://disk.yandex.ru/d/hKpsQZ4V0hqV-g", reply_markup=keyboard)
 
-# Доработка после изучения библиотеки Socket
-@dp.message_handler(lambda message: message.text == "Рендер всего")
-async def without_puree(message: types.Message):
-    gluing()
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["меню"]
-    keyboard.add(*buttons)
-    await message.answer(list, reply_markup=keyboard)
-
-# Доработка после изучения библиотеки Socket
-@dp.message_handler(lambda message: message.text == "Рендер)")
-async def without_puree(message: types.Message):
-    render()
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = ["меню"]
-    keyboard.add(*buttons)
-    await message.answer("Закончил рендер успешно", reply_markup=keyboard)
 
 # Доработка после изучения библиотеки Socket
 @dp.message_handler(lambda message: message.text == "Отправить список") # При поступлении команды "Отправить список"
 async def cmd_start(message: types.Message):
+    global video_id
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    temp = os.listdir(r"C:\Users\Kalizek\YandexDisk\Video_volleyball") # Считываем список файлов (видео) из папки
-    print(temp)
-    temp.append("/cancel") # Добавляем команду "закрыть"
-    buttons = temp
+    print(video_id)
+    buttons = video_id
     keyboard.add(*buttons)
     await message.answer("Выбери нужное видео", reply_markup=keyboard) # Выводим клавиатуру
     await Form.name.set() # Начинаем опрос созданный на 50 строчке
@@ -171,6 +148,25 @@ async def process_name(message: types.Message, state: FSMContext):
             keyboard.add(*buttons)
             await bot.send_message(message.chat.id, "Ошибка ввода, проверьте знак - разделитель (Должна быть \",\"). Проверьте количество цифр", reply_markup=keyboard)
             await state.finish()
+
+@dp.message_handler(lambda message: message.text == "Загрузка видео") # Аналогично 124 строчке
+async def cmd_start(message: types.Message):
+    await bot.send_message(message.chat.id, "Напиши список видео", reply_markup=types.ReplyKeyboardRemove())
+    await Video_ID.id.set()
+
+@dp.message_handler(state=Video_ID.id)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        global video_id
+        data['Offer'] = message.text
+        name = data['Offer']
+        video_id = name.split(" ")
+        video_id.append("/cancel")
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ["меню"]
+    keyboard.add(*buttons)
+    await bot.send_message(message.chat.id, "Ответ записан", reply_markup=keyboard)
+    await state.finish()
 
 @dp.message_handler(lambda message: message.text == "Предложение идей") # Аналогично 124 строчке
 async def cmd_start(message: types.Message):

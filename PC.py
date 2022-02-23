@@ -1,5 +1,7 @@
 from moviepy.editor import *
 import os, glob, shutil, csv
+from tkinter import *
+
 
 def read_csv():
     mas = []
@@ -36,9 +38,9 @@ def render():
 def conversion(name):
     mas = os.listdir(name)
     for i in range(len(mas)):
-        video = VideoFileClip("start_video/" + str(mas[i]))
+        video = VideoFileClip(name +"/" +  str(mas[i]))
         video.write_videofile("video/" + str(mas[i]))
-    for file in glob.glob("start_video/*"):
+    for file in glob.glob(name + "/*"):
         os.remove(file)
         print("Deleted " + str(file))
     list = os.listdir("video")
@@ -60,3 +62,42 @@ def gluing():
     for i in range(1,len(temp)):
         final_clip = concatenate_videoclips([final_clip,temp[i]])
     final_clip.write_videofile("Render_video/full/" + "full gluing" + ".mp4")
+
+
+def loading():
+    pass
+
+def get_ent():
+    value = name_video.get()
+    conversion(value)
+
+def get_ent_list():
+    value = video_list.get()
+    print(value) # Передавать значение на Raspberry
+
+def download_BD():
+    pass # Загрузка базы данных с таймкодами
+
+t = Tk()
+t['bg'] = '#80a8cb'
+t.title('Админка')
+t.geometry('300x120')
+t.resizable(width=False, height=False)
+
+
+name_video = Entry(t)
+video_list = Entry(t)
+btn1 = Button(t,text="Сконвертировать", command=get_ent)
+btn2 = Button(t,text="Загрузка видео", command=get_ent_list)
+btn3 = Button(t,text="Рендер", command=render)
+btn4 = Button(t,text="Создать полный ролик", command=gluing)
+btn5 = Button(t,text="Скачать данные с Raspberry", command=download_BD)
+
+name_video.grid(row = 0, column = 0)
+video_list.grid(row = 1, column = 0)
+btn1.grid(row = 0, column = 1)
+btn2.grid(row = 1, column = 1)
+btn3.grid(row = 2, column = 0)
+btn4.grid(row = 2, column = 1)
+btn5.grid(row = 3, column = 0)
+t.mainloop()
